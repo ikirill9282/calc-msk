@@ -12,7 +12,7 @@ use Revolution\Google\Sheets\Facades\Sheets;
 use Illuminate\Support\Facades\Log;
 
 Schedule::command('app:load-sheet')->everyFifteenMinutes();
-Schedule::command('tts')->everyMinute();
+// Schedule::command('tts')->everyMinute();
 
 Artisan::command('tt', function() {
   dd('ok');

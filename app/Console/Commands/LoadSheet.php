@@ -54,7 +54,7 @@ class LoadSheet extends Command
      */
     public function handle()
     {
-        $sid = '1ZOkCAKId9W5nAQya3ZFC1GyYeeGM-Mbne7U-F44Zw-E';
+        $sid = '1jY5CsS9XdOo_NaZsP-2OkaYkpdeESvmV1brWQWVEmhA';
         $rows = Sheets::spreadsheet($sid)->sheet('Лист1')->get();
         $rows->forget([0, 1, 2]);
 

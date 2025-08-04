@@ -16,11 +16,11 @@ Schedule::command('app:load-sheet')->everyFifteenMinutes();
 
 Artisan::command('tt', function() {
   // dd('ok');
-  $o = Order::find(100500);
-  dd($o->writeSheet());
-  // foreach (Order::all() as $order) {
-  //   $order->writeSheet();
-  // }
+  // $o = Order::find(100500);
+  // dd($o->writeSheet());
+  foreach (Order::all() as $order) {
+    $order->writeSheet();
+  }
 });
 
 Artisan::command('ttp', function() {

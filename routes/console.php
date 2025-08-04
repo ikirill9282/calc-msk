@@ -15,7 +15,7 @@ Schedule::command('app:load-sheet')->everyFifteenMinutes();
 // Schedule::command('tts')->everyMinute();
 
 Artisan::command('tt', function() {
-  dd('ok');
+  // dd('ok');
   $o = Order::find(100500);
   dd($o->writeSheet());
   // foreach (Order::all() as $order) {

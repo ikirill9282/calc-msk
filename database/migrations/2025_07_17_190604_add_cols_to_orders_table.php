@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->integer('boxes_weight')->nullable()->default(0)->after('boxes_volume');
             $table->string('payment_method_pick')->default('cash')->after('payment_method');
         });
     }
@@ -23,7 +22,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-          $table->dropColumn('boxes_weight');
           $table->dropColumn('payment_method_pick');
         });
     }

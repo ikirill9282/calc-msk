@@ -9,8 +9,10 @@ use App\Models\User;
 use App\Models\Agent;
 use Illuminate\Support\Facades\Schedule;
 use Revolution\Google\Sheets\Facades\Sheets;
+use Illuminate\Support\Facades\Log;
 
 Schedule::command('app:load-sheet')->everyFifteenMinutes();
+Schedule::command('tts')->everyMinute();
 
 Artisan::command('tt', function() {
   dd('ok');
@@ -23,4 +25,9 @@ Artisan::command('tt', function() {
 
 Artisan::command('ttp', function() {
   $user = User::where('email', 'youbizz.rus@gmail.com')->first();
+});
+
+
+Artisan::command('tts', function() {
+  Log::debug('Schedule task');
 });

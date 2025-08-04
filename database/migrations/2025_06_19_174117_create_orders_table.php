@@ -33,7 +33,7 @@ return new class extends Migration
             // $table->tinyInteger('boxes')->nullable();
             $table->integer('boxes_count')->nullable();
             $table->integer('boxes_volume')->nullable();
-            $table->integer('boxes_weight')->nullable();
+            $table->integer('boxes_weight')->nullable()->default(0);
             // $table->tinyInteger('pallets')->nullable();
             $table->integer('pallets_count')->nullable();
             $table->integer('pallets_weight')->nullable();

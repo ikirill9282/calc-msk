@@ -15,7 +15,7 @@ Schedule::command('app:load-sheet')->everyFifteenMinutes();
 // Schedule::command('tts')->everyMinute();
 
 Artisan::command('tt', function() {
-  $o = Order::latest()->limit(1)->get();
+  $o = Order::latest()->limit(1)->first();
   $o->writeSheet();
 });
 

@@ -12,6 +12,30 @@ use Google\Service\Sheets\BatchUpdateSpreadsheetRequest;
 class Order extends Model
 {
 
+  public static function boot()
+  {
+    parent::boot();
+
+    static::saving(function($model) {
+      if ($model->transfer_method == 'pick') {
+        $model->transfer_method_receive_date = null;
+        $model->payment_method_pick = null;
+      } elseif ($model->transfer_method == 'receive') {
+        $model->transfer_method_pick_address = null;
+        $model->transfer_method_pick_date = null;
+      }
+
+      if ($model->cargo == 'boxes') {
+        $model->pallets_count = 0;
+      } elseif ($model->cargo == 'pallets') {
+        $model->boxes_count = 0;
+        $model->boxes_weight = 0;
+        $model->boxes_volume = 0;
+      }
+    });
+  }
+
+
   public function user()
   {
     return $this->belongsTo(User::class);

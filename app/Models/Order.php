@@ -35,7 +35,6 @@ class Order extends Model
     });
   }
 
-
   public function user()
   {
     return $this->belongsTo(User::class);
@@ -146,12 +145,17 @@ class Order extends Model
       'agent_name' => $agent->name,
       'agent_phone' => "'$agent->phone",
       'delivery_date' => $item['delivery_date'],
-      'distrubutor_id' => $item['distributor_center_id'] . ' ' . $item['distributor_id'],
-      'payment_method' => $item['payment_method'],
+      'distrubutor_id' => $item['distributor_id'],
+      'distributor_center_id' => $item['distributor_center_id'],
+      'payment_method_pick' => $item['payment_method_pick'], // Стоимость доставки
       'custom1' => null,
       'custom2' => null,
       'custom3' => null,
       'custom4' => null,
+      'cargo' => match($item['cargo']) {
+        'boxes' => 'Коробки',
+        'pallets' => 'Палеты',
+      },
       'pallets_count' => $item['pallets_count'],
       'custom5' => null,
       'boxes_count' => $item['boxes_count'],
@@ -168,7 +172,7 @@ class Order extends Model
         'receive' => 'Нет',
         'pick' => 'Да',
       },
-      'payment_method_pick' => $item['payment_method_pick'],
+      'payment_method' => $item['payment_method'],
       'pick_date' => $item['transfer_method_pick_date'],
       'pick_address' => $item['transfer_method_pick_address'],
       'comment' => $item['cargo_comment'],
@@ -245,11 +249,12 @@ class Order extends Model
     return $order;
   }
 
-  public function getPaymentMethodLabel($val): string
+  public function getPaymentMethodLabel($val): ?string
   {
     return match($val) {
       'cash' => 'Наличными при отправке',
       'bill' => 'По счету',
+      default => null
     };
   }
 

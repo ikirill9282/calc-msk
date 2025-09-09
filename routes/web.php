@@ -23,7 +23,8 @@ Route::middleware('auth:web')->group(function() {
 Route::prefix('auth')->controller(AuthController::class)->group(function() {
   Route::match(['get', 'post'], '/logout', 'logout')->name('logout');
   Route::post('/login', 'login')->name('login');
-  Route::post('/reset-password', 'reset')->name('password.reset');
+  Route::match(['get', 'post'], '/reset', 'reset')->name('password.reset');
+  Route::post('/change', 'change')->name('password.change');
   Route::post('/register', 'register')->name('register');
   Route::get('/verify/{hash}', 'verify')->name('verify');
 });

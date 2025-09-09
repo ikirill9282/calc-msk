@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Confirm;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Carbon;
 
 class User extends Authenticatable
 {
@@ -46,5 +47,10 @@ class User extends Authenticatable
     public static function validatePassword(string $password): bool
     {
       return preg_match( '/^(?=.*[A-Z])(?=.*\d)[A-Za-z\d!@#$%^&*()_\-+=]{6,}$/is', $password);
+    }
+
+    public function makeResetUrl(): string
+    {
+      return url('/auth/reset') . '?p=' . Crypt::encrypt(['id' => $this->id, 'expires' => Carbon::now()->modify('+5 minutes')->timestamp]);
     }
 }

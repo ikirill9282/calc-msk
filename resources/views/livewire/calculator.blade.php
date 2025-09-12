@@ -266,7 +266,7 @@
                     {{-- <span>@include('icons.download')</span> --}}
                     <a target="_blank"
                         class="!p-3 !w-full"
-                        href="https://docs.google.com/spreadsheets/d/198VI0GjoaFRSdPzP5meYhBg4AqhnbS1unyywGThg0-o/edit?usp=sharing">
+                        href="https://docs.google.com/spreadsheets/d/1xjeb59e5TIrtseCjsUjXbucfpfTJQNfjz08M6qeq2CQ/edit?gid=0#gid=0">
                         Прайс-лист
                     </a>
                 </div>

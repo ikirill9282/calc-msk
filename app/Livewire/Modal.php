@@ -120,7 +120,7 @@ class Modal extends Component
         // dd($e);
         // dump('ok');
       }
-      $this->addError('email', 'Не верный логин или пароль');
+      $this->addError('email', 'Неверный логин или пароль');
 
       return ;
     }

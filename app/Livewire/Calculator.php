@@ -209,6 +209,12 @@ class Calculator extends Component
      */
     public function checkIndividual(): void
     {
+      // Only for boxes
+      if ($this->getField('cargo') == 'pallets') {
+        $this->setField('individual', 0);
+        return ;
+      }
+
       $volume = (int)$this->getField('boxes_data.volume');
       $weight = (int)$this->getField('boxes_data.weight');
 

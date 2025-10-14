@@ -24,14 +24,6 @@ class Agents extends Component
       'name' => null,
       'phone' => null,
       'email' => null,
-
-      // "title" => "Test",
-      // "inn" => "123123132123",
-      // "ogrn" => "123123123123",
-      // "address" => "г Москва, мкр Северное Чертаново",
-      // "name" => "Test",
-      // "phone" => "+7(123)123-12-31",
-      // "email" => "test@test.com",
     ];
 
     public $agents_open = [];
@@ -162,7 +154,8 @@ class Agents extends Component
         'title' => $valid['title'],
         'ogrn' => $valid['ogrn'],
         'inn' => $valid['inn'],
-      ]);
+      ])->first();
+      
       if (
         !$this->edit_mode &&
         $agent
@@ -174,6 +167,7 @@ class Agents extends Component
           'email' => $valid['email'],
         ]);
         $this->reloadAgents();
+
         return ;
       }
 

@@ -123,6 +123,8 @@ class Agents extends Component
           'phone' => 'required|string',
           'email' => 'required|string',
         ],
+
+        
         [
           'title.required' => 'Необходимо заполнить поле',
           'inn.required' => 'Необходимо заполнить поле',

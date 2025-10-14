@@ -157,22 +157,17 @@ class Agents extends Component
       $valid = $validator->validated();
       $valid['user_id'] = Auth::user()->id;
       
+      $agent = Agent::where([
+        'user_id' => $valid['user_id'],
+        'title' => $valid['title'],
+        'ogrn' => $valid['ogrn'],
+        'inn' => $valid['inn'],
+      ]);
       if (
         !$this->edit_mode &&
-        Agent::where([
-          'user_id' => $valid['user_id'],
-          'title' => $valid['title'],
-          'ogrn' => $valid['ogrn'],
-          'inn' => $valid['inn'],
-        ])
-        ->exists()
+        $agent
       ) {
-        $this->setErrorBag([
-          'title' => 'Контрагент уже существует',
-          'inn' => 'Контрагент уже существует',
-          'ogrn' => 'Контрагент уже существует',
-        ]);
-        return ;
+        $agent->update(['disabled' => 0]);
       }
 
       if ($this->edit_mode && $this->edit_model) {

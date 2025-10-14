@@ -271,7 +271,6 @@ class Agents extends Component
       return Arr::get($this->form, str_ireplace('form.', '', $name));
     }
 
-
     public function setField(string $name, mixed $value): void
     {
       Arr::set($this->form, str_ireplace('form.', '', $name), $value);

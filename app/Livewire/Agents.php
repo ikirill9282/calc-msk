@@ -173,6 +173,7 @@ class Agents extends Component
           'phone' => $valid['phone'],
           'email' => $valid['email'],
         ]);
+        $this->reloadAgents();
         return ;
       }
 

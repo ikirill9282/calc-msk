@@ -167,7 +167,12 @@ class Agents extends Component
         !$this->edit_mode &&
         $agent
       ) {
-        $agent->update(['disabled' => 0]);
+        $agent->update([
+          'disabled' => 0,
+          'name' => $valid['name'],
+          'phone' => $valid['phone'],
+          'email' => $valid['email'],
+        ]);
         return ;
       }
 

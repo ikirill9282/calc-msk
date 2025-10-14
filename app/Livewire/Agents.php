@@ -168,6 +168,7 @@ class Agents extends Component
         $agent
       ) {
         $agent->update(['disabled' => 0]);
+        return ;
       }
 
       if ($this->edit_mode && $this->edit_model) {

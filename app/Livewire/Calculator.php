@@ -819,12 +819,13 @@ class Calculator extends Component
           array_push($result, $point_date->format('Y-m-d'));
         }
         sort($result, SORT_DESC);
-        
+
         $result = array_filter($result, function($date) {
           if (
             $date == Carbon::today()->format('Y-m-d')
             && Carbon::now()->gte(Carbon::today()->setHours(15))
           ) {
+            dd($date);
             return false;
           }
           return Carbon::parse($date)->gte(Carbon::today());

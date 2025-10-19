@@ -821,6 +821,7 @@ class Calculator extends Component
         sort($result, SORT_DESC);
 
         $result = array_filter($result, function($date) {
+          dd($date);
           if (
             $date == Carbon::today()->format('Y-m-d')
             && Carbon::now()->gte(Carbon::today()->setHours(15))

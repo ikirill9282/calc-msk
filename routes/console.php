@@ -12,11 +12,12 @@ use Revolution\Google\Sheets\Facades\Sheets;
 use Illuminate\Support\Facades\Log;
 
 Schedule::command('app:load-sheet')->everyFifteenMinutes();
-// Schedule::command('tts')->everyMinute();
+Schedule::command('app:write-sheet')->everyFiveMinutes();
 
 Artisan::command('tt', function() {
-  $o = Order::latest()->limit(1)->first();
-  $o->writeSheet();
+  foreach (Order::all() as $order) {
+    
+  }
 });
 
 Artisan::command('ttp', function() {

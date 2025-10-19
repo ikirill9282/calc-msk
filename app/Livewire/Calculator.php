@@ -50,6 +50,9 @@ class Calculator extends Component
       ],
       'pallets_data' => [
         'count' => null,
+        'weight' => null,
+        'boxcount' => null,
+        'volume' => null,
       ],
       'cargo_comment' => null,
       'cargo_type' => null,
@@ -80,6 +83,8 @@ class Calculator extends Component
 
     public array $dropdownOpen = [];
 
+    public ?string $pick_address = null;
+
     public function mount()
     {
       // Session::forget('calc');
@@ -95,7 +100,7 @@ class Calculator extends Component
           if ($order) {
             foreach ($order->toArray() as $key => $val) {
               if ($key == 'post_date') continue;
-
+              
               if ($key == 'transfer_method_pick_address') {
                 $this->fields['transfer_method_pick']['address'] = $val;
                 continue;
@@ -132,7 +137,12 @@ class Calculator extends Component
       if ($property == 'fields.transfer_method_pick.address') {
         $this->dropdownOpen[$property] = true;
         $this->getAddresses(Arr::get($this->fields, str_ireplace('fields.', '', $property)));
+        $this->validatePickAddress();
       }
+      // if ($property == 'pick_address') {
+      //   $this->dropdownOpen[$property] = true;
+      //   $this->getAddresses($this->pick_address);
+      // }
 
       if ($property == 'fields.delivery_date' && $this->isValidCarbonDate($this->getField('delivery_date'))) {
         $this->fields['post_date'] = $this->getDeliveryDiff();
@@ -141,7 +151,6 @@ class Calculator extends Component
       $this->checkIndividual();
       Session::put('calc', json_encode($this->fields));
     }
-
 
     function isValidCarbonDate(string $value): bool
     {
@@ -171,24 +180,34 @@ class Calculator extends Component
     }
 
     /**
-     * If density more than 300 - enable "individual" field.
+     * If boxes density more than 300 - enable "individual" field.
+     * If pallets weight more than 400 - enable "individual" field.
      */
     public function checkIndividual(): void
     {
-      // Only for boxes
-      if ($this->getField('cargo') == 'pallets') {
-        $this->setField('individual', 0);
-        return ;
+
+      // For boxes
+      if ($this->getField('cargo') == 'boxes') { 
+        $volume = $this->getField('boxes_data.volume');
+        $weight = $this->getField('boxes_data.weight');
+
+        if (!empty($volume) && !empty($weight)) {
+          $density = round($weight / $volume);
+          if ($density > 300) {
+            $this->setField('individual', 1);
+          } elseif ($this->getField('individual')) {
+            $this->setField('individual', 0);
+          }
+        }
       }
 
-      $volume = $this->getField('boxes_data.volume');
-      $weight = $this->getField('boxes_data.weight');
-
-      if (!empty($volume) && !empty($weight)) {
-        $density = round($weight / $volume);
-        if ($density > 300) {
+      // For pallets
+      if ($this->getField('cargo') == 'pallets') {
+        $pallets_weight = $this->getField('pallets_data.weight');
+        
+        if ($pallets_weight && $pallets_weight > 400) {
           $this->setField('individual', 1);
-        } elseif ($this->getField('individual')) {
+        } else {
           $this->setField('individual', 0);
         }
       }
@@ -250,7 +269,6 @@ class Calculator extends Component
             ->where('distributor', $this->getField('distributor_id'))
             ->where(DB::raw('CONCAT(distributor_center, " ", distributor_address)'), $this->getField('distributor_center_id'))
 
-            /** DISABLE FOR TEST */
             // ->where('distributor_center_delivery_date', Carbon::parse($this->getField('delivery_date'))->format('Y-m-d'))
             
             ->select(['delivery_tariff_min', 'delivery_tariff_vol', 'delivery_tariff_pallete'])
@@ -474,6 +492,8 @@ class Calculator extends Component
           } elseif ($this->fields['transfer_method'] == 'pick') {
             if (empty($this->getField('transfer_method_pick.address'))) {
               return true;
+            } elseif (!$this->validatePickAddress()) {
+              return true;
             } elseif (empty($this->getField('transfer_method_pick.date')) || !$this->isValidCarbonDate(empty($this->getField('transfer_method_pick.date')))) {
               return true;
             } else {
@@ -541,10 +561,6 @@ class Calculator extends Component
 
     public function getField(string $name): mixed
     {
-      // if (str_contains($name, '.')) {
-      //   return Arr::get($this->fields, $name);
-      // }
-      // return array_key_exists($name, $this->fields) ? $this->fields[$name] : null;
       $key = str_ireplace('fields.', '', $name);
       $val = Arr::get($this->fields, $key);
       if (in_array($key, $this->numeric_fields)) {
@@ -564,8 +580,16 @@ class Calculator extends Component
 
       if ($key == 'transfer_method_pick.address') {
         $this->getAddresses(Arr::get($this->fields, 'transfer_method_pick.address'));
+        $this->validatePickAddress();
         unset($this->dropdownOpen["fields.$key"]);
       }
+
+      // if ($key == 'pick_address') {
+      //   $this->pick_address = $value;
+      //   $this->getAddresses($value);
+      //   $this->setField('transfer_method_pick.address', $value);
+      //   unset($this->dropdownOpen["pick_address"]);
+      // }
 
       if ($key == 'delivery_date') {
         $this->fields['post_date'] = $this->getDeliveryDiff();
@@ -682,15 +706,15 @@ class Calculator extends Component
         
         $weekend = !intval($weekend?->delivery_weekend);
         
-        
         $result = $data->toArray();
         $result = $weekend ? $result : array_values(array_filter($result, fn($date) => !Carbon::parse($date)->isWeekend()));
 
         $result = array_values(array_filter($result, fn($date) => Carbon::parse($date)->gte(Carbon::today())));
-
+        
         foreach($result as $k => $date) {
           $sub_dates = $this->getDeliveryPickDates($date);
           if (empty($sub_dates)) unset($result[$k]);
+
         }
         return array_values($result);
       }
@@ -737,7 +761,18 @@ class Calculator extends Component
         
         sort($result, SORT_DESC);
 
-        return array_filter($result, fn($date) => Carbon::parse($date)->gte(Carbon::today()));
+        $result = array_filter($result, function($date) {
+          if (
+            $date == Carbon::today()->format('Y-m-d')
+            && Carbon::now()->gte(Carbon::today()->setHours(16))
+          ) {
+            return false;
+          }
+
+          return Carbon::parse($date)->gte(Carbon::today());
+        });
+
+        return array_values($result);
       }
       return [];
     }
@@ -784,8 +819,17 @@ class Calculator extends Component
           array_push($result, $point_date->format('Y-m-d'));
         }
         sort($result, SORT_DESC);
+        $result = array_filter($result, function($date) {
+          if (
+            $date == Carbon::today()->format('Y-m-d')
+            && Carbon::now()->gte(Carbon::today()->setHours(15))
+          ) {
+            return false;
+          }
+          return Carbon::parse($date)->gte(Carbon::today());
+        });
 
-        return array_filter($result, fn($date) => Carbon::parse($date)->gte(Carbon::today()));
+        return array_values($result);
       }
       return [];
     }
@@ -887,6 +931,32 @@ class Calculator extends Component
       return true;
     }
 
+    public function validatePickAddress()
+    {
+      // Костыль до выяснения
+      if (preg_match('/[0-9]+/is', $this->getField('transfer_method_pick.address'))) {
+        return true;
+      } else {
+        $this->addError('transfer_method_pick.address', 'Необходимо заполнить город, улицу и дом');
+        return false;
+      }
+
+      $client = new DadataClient();
+      $result = $client->clean('address', $this->getField('transfer_method_pick.address'));
+      
+      $city = $result['city'] ?? null;
+      $street = $result['street'] ?? null;
+      $house = $result['house'] ?? null;
+      $qc_house = $result['qc_house'] ?? 10;
+      
+      if ($city && $street && $house && in_array($qc_house, [2, 3])) {
+        return true;
+      } else {
+        $this->addError('transfer_method_pick.address', 'Необходимо заполнить город, улицу и дом');
+        return false;   
+      }
+    }
+    
     public function prepareOrder()
     {
       $fields = $this->fields;
@@ -927,7 +997,11 @@ class Calculator extends Component
             throw new ValidationException($validator);
           }
           $order = $this->prepareOrder();
+          // try {
           $order->save();
+          // } catch (\Exception $e) {
+            
+          // }
 
           Session::forget('calc');
           return redirect('/success/?order='.Crypt::encrypt($order->id));

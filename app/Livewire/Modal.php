@@ -38,6 +38,11 @@ class Modal extends Component
       'password_confirm' => null,
     ];
 
+    public array $reset = [
+      'password' => null,
+      'password_confirm' => null,
+    ];
+
     public function mount(?string $view = 'auth')
     {
       $this->view = $view;
@@ -65,10 +70,10 @@ class Modal extends Component
         $this->open();
     }
 
-    #[On('openRegister')]
-    public function openRegister()
+    #[On('openReset')]
+    public function openReset()
     {
-        $this->view = 'register';
+        $this->view = 'reset';
         $this->open();
     }
 
@@ -78,12 +83,19 @@ class Modal extends Component
         $this->view = 'reset-sended';
         $this->open();
     }
-    
+
     #[On('openResetSuccess')]
     public function openResetSuccess()
     {
         $this->view = 'reset-success';
         $this->open();
+    }
+
+    #[On('openRegister')]
+    public function openRegister()
+    {
+      $this->view = 'register';
+      $this->open();
     }
 
     #[On('modalOpen')]
@@ -129,7 +141,7 @@ class Modal extends Component
     {
       $validator = Validator::make($this->register, [
           'name' => 'required|string',
-          'email' => 'required|string|email',
+          'email' => 'required|string|email:dns',
           'phone' => 'sometimes|nullable|string',
           'password' => 'required|string',
           'password_confirm' => 'required|string',
@@ -142,6 +154,7 @@ class Modal extends Component
       }
 
       $valid = $validator->validated();
+      dd($valid);
 
       if (User::where('email', $valid['email'])->exists()) {
         $this->addError('email', 'Адрес электронной почты уже используется.');
@@ -149,13 +162,13 @@ class Modal extends Component
       }
 
       if (!User::validatePassword($valid['password'])) {
-        $this->addError('password', __('validation.password_simple'));
+        $this->addError('password', 'Пароль должен состоять из букв и цифр верхнего и нижнего регистра и иметь длину не менее 6 символов');
         return ;
       }
 
       if ($valid['password'] !== $valid['password_confirm']) {
-        $this->addError('password', __('validation.password_confirm'));
-        $this->addError('password_confirm', __('validation.password_confirm'));
+        $this->addError('password', 'Пароли не совпадают');
+        $this->addError('password_confirm', 'Пароли не совпадают');
         return ;
       }
 

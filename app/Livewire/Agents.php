@@ -24,6 +24,14 @@ class Agents extends Component
       'name' => null,
       'phone' => null,
       'email' => null,
+
+      // "title" => "Test",
+      // "inn" => "123123132123",
+      // "ogrn" => "123123123123",
+      // "address" => "г Москва, мкр Северное Чертаново",
+      // "name" => "Test",
+      // "phone" => "+7(123)123-12-31",
+      // "email" => "test@test.com",
     ];
 
     public $agents_open = [];
@@ -75,6 +83,12 @@ class Agents extends Component
       if ($name == 'form.address') {
         $this->getAddresses();
       }
+
+      if ($name == 'title') {
+        $this->clearField('address');
+        $this->clearField('inn');
+        $this->clearField('ogrn');
+      }
     }
 
     #[On('clearMessages')]
@@ -121,10 +135,8 @@ class Agents extends Component
           'address' => 'required|string',
           'name' => 'required|string',
           'phone' => 'required|string',
-          'email' => 'required|string',
+          'email' => 'required|string|email:dns',
         ],
-
-        
         [
           'title.required' => 'Необходимо заполнить поле',
           'inn.required' => 'Необходимо заполнить поле',
@@ -141,6 +153,8 @@ class Agents extends Component
           'name.string' => 'Поле должно быть текстом',
           'phone.string' => 'Поле должно быть текстом',
           'email.string' => 'Поле должно быть текстом',
+
+          'email.string' => 'Поле должно быть Email адресом',
         ]
       );
 
@@ -157,7 +171,7 @@ class Agents extends Component
         'ogrn' => $valid['ogrn'],
         'inn' => $valid['inn'],
       ])->first();
-      
+
       if (
         !$this->edit_mode &&
         $agent
@@ -169,7 +183,6 @@ class Agents extends Component
           'email' => $valid['email'],
         ]);
         $this->reloadAgents();
-
         return ;
       }
 
@@ -273,6 +286,7 @@ class Agents extends Component
       return Arr::get($this->form, str_ireplace('form.', '', $name));
     }
 
+
     public function setField(string $name, mixed $value): void
     {
       Arr::set($this->form, str_ireplace('form.', '', $name), $value);
@@ -288,9 +302,6 @@ class Agents extends Component
         $this->form['inn'] = $company['inn'];
         $this->form['ogrn'] = $company['ogrn'];
         $this->form['address'] = $company['address'];
-        // $this->form['name'] = $company['manager'] ?? $this->form['name'];
-        // $this->form['phone'] = $company['phone'] ?? $this->form['phone'];
-        // $this->form['email'] = $company['email'] ?? $this->form['email'];
         $this->company = $company;
         $this->getCompanies($company['name']);
         $this->getAddresses($company['address']);

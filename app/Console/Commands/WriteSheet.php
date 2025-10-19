@@ -31,10 +31,10 @@ class WriteSheet extends Command
      */
     public function handle()
     {
-      $sheet = Sheets::spreadsheet('1LDtQ6iJ8BE9uMUHJGySWdKG6FqTuPzYzET7KaLGPGCQ')
-        ->sheet("Лист1")
-        ->range('')
-        ;
+      // $sheet = Sheets::spreadsheet('1LDtQ6iJ8BE9uMUHJGySWdKG6FqTuPzYzET7KaLGPGCQ')
+      //   ->sheet("Лист1")
+      //   ->range('')
+      //   ;
       $orders = Order::whereDoesntHave('print')->limit(60)->get();
 
       foreach ($orders as $order) {
@@ -44,7 +44,7 @@ class WriteSheet extends Command
         $data = $order->prepareSheetData();
         GoogleClient::write($data[0]);
         $order->print()->firstOrCreate();
-        Log::debug('Order printed in sheet ' . $order->id, ['order' => $order]);
+        // Log::debug('Order printed in sheet ' . $order->id, ['order' => $order]);
       }
     }
 }

@@ -45,7 +45,7 @@ class GoogleClient
         $body,
         $params
       );
-      Log::debug("Order wtited {$data[1]}", ['order' => $data, 'result' => $result]);
+      Log::debug("Order printed {$data[1]}", ['order' => $data, 'result' => $result]);
     }
   }
 }

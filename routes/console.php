@@ -10,13 +10,16 @@ use App\Models\Agent;
 use Illuminate\Support\Facades\Schedule;
 use Revolution\Google\Sheets\Facades\Sheets;
 use Illuminate\Support\Facades\Log;
+use App\Services\GoogleClient;
 
 Schedule::command('app:load-sheet')->everyFifteenMinutes();
 Schedule::command('app:write-sheet')->everyFiveMinutes();
 
 Artisan::command('tt', function() {
+  // $orders = Order::whereDoesntHave('print')->get();
   foreach (Order::all() as $order) {
-    
+    $data = $order->prepareSheetData();
+    GoogleClient::write($data[0]);
   }
 });
 

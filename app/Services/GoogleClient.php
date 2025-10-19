@@ -20,7 +20,7 @@ class GoogleClient
 
     $service = new Sheets($client);
 
-    $spreadsheetId = '1xfxBNfib6KYC3td31rEDru5OhI2Yn--N5VF4ilVKx9I';
+    $spreadsheetId = '1LDtQ6iJ8BE9uMUHJGySWdKG6FqTuPzYzET7KaLGPGCQ';
     $sheetName = 'Лист1';
 
     $response = $service->spreadsheets_values->get($spreadsheetId, $sheetName);

@@ -4,18 +4,26 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Confirm;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
+
+    public const ROLES = [
+        'admin' => 'Администратор',
+        'manager' => 'Менеджер',
+        'user' => 'Пользователь',
+    ];
 
     protected $hidden = [
         'password',
@@ -52,5 +60,10 @@ class User extends Authenticatable
     public function makeResetUrl(): string
     {
       return url('/auth/reset') . '?p=' . Crypt::encrypt(['id' => $this->id, 'expires' => Carbon::now()->modify('+5 minutes')->timestamp]);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+      return in_array($this->role, ['admin', 'manager'], true);
     }
 }

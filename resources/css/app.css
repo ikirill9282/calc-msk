@@ -122,3 +122,56 @@
 .dark .air-datepicker-cell.-disabled- {
   color: var(--color-primary-600) !important;
 }
+
+/* Вертикальные линии между столбцами таблиц Filament */
+.fi-ta-table thead th,
+.fi-ta-table tbody td {
+  border-right: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 0.35rem 0.5rem;
+}
+
+.fi-ta-table thead th {
+  min-width: 0;
+}
+
+.fi-ta-table thead th > span {
+  flex-wrap: wrap;
+  row-gap: 0.15rem;
+}
+
+.fi-ta-table thead th .fi-ta-header-cell-label {
+  display: block;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.fi-ta-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 25;
+}
+
+.fi-ta-table tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background-color: #fff;
+  box-shadow: 4px 0 6px -4px rgba(15, 23, 42, 0.2);
+}
+
+.dark .fi-ta-table tbody td:first-child {
+  background-color: rgba(30, 41, 59, 0.95);
+  box-shadow: 4px 0 6px -4px rgba(15, 23, 42, 0.5);
+}
+
+.fi-ta-text-item.cursor-pointer,
+.fi-ta-text-item .cursor-pointer {
+  cursor: pointer;
+}
+
+.fi-ta-table thead th:last-child,
+.fi-ta-table tbody td:last-child {
+  border-right: none;
+}

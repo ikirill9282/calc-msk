@@ -1176,35 +1176,31 @@ class OrderResource extends Resource
 												->columnSpan(1),
 
 											Infolists\Components\Section::make('Доставка')
-												->schema([
-														Infolists\Components\TextEntry::make('delivery_date')
+											->schema([
+													Infolists\Components\TextEntry::make('delivery_date')
 															->label('Поставка на РЦ')
-															Infolists\Components\Section::make('Доставка')
-															->schema([
-																	Infolists\Components\TextEntry::make('delivery_date')
-																		->label('Поставка на РЦ')
-																		->date('d.m.Y')
-																		->size('sm')
-																		->extraAttributes(fn (Order $record) => $record->hasChanged('delivery_date') ? ['class' => 'text-orange-500'] : []),
-																	Infolists\Components\TextEntry::make('send_date')
-																		->label('Отправка')
-																		->date('d.m.Y')
-																		->size('sm')
-																		->hidden(fn (Order $record) => blank($record->send_date))
-																		->extraAttributes(fn (Order $record) => $record->hasChanged('send_date') ? ['class' => 'text-orange-500'] : []),
-																	Infolists\Components\TextEntry::make('distribution')
-																		->label('РЦ и адрес')
-																		->state(fn (Order $record) => $record->distribution_label ?: '—')
-																		->size('sm')
-																		->columnSpan(2)
-																		->extraAttributes(fn (Order $record) => $record->hasChanged('distributor_id', 'distributor_center_id') ? ['class' => 'text-orange-500'] : []),
-																	Infolists\Components\TextEntry::make('warehouse_id')
-																		->label('Склад')
-																		->size('sm')
-																		->columnSpan(2)
-																		->extraAttributes(fn (Order $record) => $record->hasChanged('warehouse_id') ? ['class' => 'text-orange-500'] : []),
-															])
-															->columns(2)
-															->compact()
-															->columnSpan(1),
+															->date('d.m.Y')
+															->size('sm')
+															->extraAttributes(fn (Order $record) => $record->hasChanged('delivery_date') ? ['class' => 'text-orange-500'] : []),
+													Infolists\Components\TextEntry::make('send_date')
+															->label('Отправка')
+															->date('d.m.Y')
+															->size('sm')
+															->hidden(fn (Order $record) => blank($record->send_date))
+															->extraAttributes(fn (Order $record) => $record->hasChanged('send_date') ? ['class' => 'text-orange-500'] : []),
+													Infolists\Components\TextEntry::make('distribution')
+															->label('РЦ и адрес')
+															->state(fn (Order $record) => $record->distribution_label ?: '—')
+															->size('sm')
+															->columnSpan(2)
+															->extraAttributes(fn (Order $record) => $record->hasChanged('distributor_id', 'distributor_center_id') ? ['class' => 'text-orange-500'] : []),
+													Infolists\Components\TextEntry::make('warehouse_id')
+															->label('Склад')
+															->size('sm')
+															->columnSpan(2)
+															->extraAttributes(fn (Order $record) => $record->hasChanged('warehouse_id') ? ['class' => 'text-orange-500'] : []),
+											])
+											->columns(2)
+											->compact()
+											->columnSpan(1),
 

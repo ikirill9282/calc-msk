@@ -1137,74 +1137,72 @@ class OrderResource extends Resource
 		public static function infolist(Infolist $infolist): Infolist
 		{
 			return $infolist
-					->schema([
-							Infolists\Components\Grid::make(3)
-									->schema([
-											Infolists\Components\Section::make('Основное')
-												->schema([
-														Infolists\Components\TextEntry::make('id')
-															->label('№ заявки')
-															->size('sm'),
-														Infolists\Components\TextEntry::make('created_at')
-															->label('Создана')
-															->dateTime('d.m.Y H:i')
-															->size('sm'),
-														Infolists\Components\TextEntry::make('agent.title')
-															->label('Отправитель')
-															->size('sm')
-															->columnSpan(2)
-															->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
-														Infolists\Components\TextEntry::make('agent.name')
-															->label('Контактное лицо')
-															->size('sm')
-															->hidden(fn (Order $record) => blank($record->agent?->name))
-															->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
-														Infolists\Components\TextEntry::make('agent.phone')
-															->label('Телефон')
-															->size('sm')
-															->hidden(fn (Order $record) => blank($record->agent?->phone))
-															->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
-														Infolists\Components\TextEntry::make('agent.email')
-															->label('Email')
-															->size('sm')
-															->columnSpan(2)
-															->hidden(fn (Order $record) => blank($record->agent?->email))
-															->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
-												])
-												->columns(2)
-												->compact()
-												->columnSpan(1),
-
-										Infolists\Components\Section::make('Доставка')
-											->schema([
-												Infolists\Components\TextEntry::make('delivery_date')
-													->label('Поставка на РЦ')
-													->date('d.m.Y')
-													->size('sm')
-													->extraAttributes(fn (Order $record) => $record->hasChanged('delivery_date') ? ['class' => 'text-orange-500'] : []),
-												Infolists\Components\TextEntry::make('send_date')
-													->label('Отправка')
-													->date('d.m.Y')
-													->size('sm')
-													->hidden(fn (Order $record) => blank($record->send_date))
-													->extraAttributes(fn (Order $record) => $record->hasChanged('send_date') ? ['class' => 'text-orange-500'] : []),
-												Infolists\Components\TextEntry::make('distribution')
-													->label('РЦ и адрес')
-													->state(fn (Order $record) => $record->distribution_label ?: '—')
-													->size('sm')
-													->columnSpan(2)
-													->extraAttributes(fn (Order $record) => $record->hasChanged('distributor_id', 'distributor_center_id') ? ['class' => 'text-orange-500'] : []),
-												Infolists\Components\TextEntry::make('warehouse_id')
-													->label('Склад')
-													->size('sm')
-													->columnSpan(2)
-													->extraAttributes(fn (Order $record) => $record->hasChanged('warehouse_id') ? ['class' => 'text-orange-500'] : []),
-											])
-											->columns(2)
-											->compact()
-											->columnSpan(1),
- 
- 					]);
- 			]);
- 		}
+				->schema([
+					Infolists\Components\Grid::make(3)
+						->schema([
+							Infolists\Components\Section::make('Основное')
+								->schema([
+									Infolists\Components\TextEntry::make('id')
+										->label('№ заявки')
+										->size('sm'),
+									Infolists\Components\TextEntry::make('created_at')
+										->label('Создана')
+										->dateTime('d.m.Y H:i')
+										->size('sm'),
+									Infolists\Components\TextEntry::make('agent.title')
+										->label('Отправитель')
+										->size('sm')
+										->columnSpan(2)
+										->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
+									Infolists\Components\TextEntry::make('agent.name')
+										->label('Контактное лицо')
+										->size('sm')
+										->hidden(fn (Order $record) => blank($record->agent?->name))
+										->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
+									Infolists\Components\TextEntry::make('agent.phone')
+										->label('Телефон')
+										->size('sm')
+										->hidden(fn (Order $record) => blank($record->agent?->phone))
+										->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
+									Infolists\Components\TextEntry::make('agent.email')
+										->label('Email')
+										->size('sm')
+										->columnSpan(2)
+										->hidden(fn (Order $record) => blank($record->agent?->email))
+										->extraAttributes(fn (Order $record) => $record->hasChanged('agent_id') ? ['class' => 'text-orange-500'] : []),
+								])
+								->columns(2)
+								->compact()
+								->columnSpan(1),
+							Infolists\Components\Section::make('Доставка')
+								->schema([
+									Infolists\Components\TextEntry::make('delivery_date')
+										->label('Поставка на РЦ')
+										->date('d.m.Y')
+										->size('sm')
+										->extraAttributes(fn (Order $record) => $record->hasChanged('delivery_date') ? ['class' => 'text-orange-500'] : []),
+									Infolists\Components\TextEntry::make('send_date')
+										->label('Отправка')
+										->date('d.m.Y')
+										->size('sm')
+										->hidden(fn (Order $record) => blank($record->send_date))
+										->extraAttributes(fn (Order $record) => $record->hasChanged('send_date') ? ['class' => 'text-orange-500'] : []),
+									Infolists\Components\TextEntry::make('distribution')
+										->label('РЦ и адрес')
+										->state(fn (Order $record) => $record->distribution_label ?: '—')
+										->size('sm')
+										->columnSpan(2)
+										->extraAttributes(fn (Order $record) => $record->hasChanged('distributor_id', 'distributor_center_id') ? ['class' => 'text-orange-500'] : []),
+									Infolists\Components\TextEntry::make('warehouse_id')
+										->label('Склад')
+										->size('sm')
+										->columnSpan(2)
+										->extraAttributes(fn (Order $record) => $record->hasChanged('warehouse_id') ? ['class' => 'text-orange-500'] : []),
+								])
+								->columns(2)
+								->compact()
+								->columnSpan(1),
+						]),
+				]);
+		}
  }

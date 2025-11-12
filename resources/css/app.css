@@ -171,6 +171,7 @@
   cursor: pointer;
 }
 
+
 .fi-ta-table thead th:last-child,
 .fi-ta-table tbody td:last-child {
   border-right: none;

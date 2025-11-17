@@ -24,25 +24,26 @@
           <x-card>
               <form wire:submit.prevent="submit" action="{{ url('/agents/create') }}" class="flex flex-col gap-4 bg-inherit">
                   <x-form.dropdown 
-                    id="title"
-                    name="title"
-                    label="Название"
+                    id="inn"
+                    name="inn"
+                    label="ИНН/КПП"
                     :items="$this->companies"
                     :searchable="true"
-                    wire:model="form.title"
+                    wire:model="form.inn"
                     :selectedKey="$this->company['key'] ?? null"
                     optionLabel="name"
-                    optionValue="name"
+                    optionValue="inn"
                     optionDescription="description"
                     optionKey="key"
                     autocomplete="off"
                     aria-autocomplete="off"
                     rp="form."
-                    empty_text="Введите название или ИНН"
+                    inputClass="input-numeric"
+                    empty_text="ВВЕДИТЕ ИНН ВАШЕГО ИП ИЛИ ООО"
                   />
 
-                  <x-form.wrap label="ИНН/КПП" name="inn" :disabled="true" >
-                    <x-form.input wire:model="form.inn" name="inn" class="input-numeric" readonly />
+                  <x-form.wrap label="Название" name="title" :disabled="true" >
+                    <x-form.input wire:model="form.title" name="title" readonly />
                   </x-form.wrap>
 
                   <x-form.wrap label="ОГРН/ОГРНИП" name="ogrn" :disabled="true" >

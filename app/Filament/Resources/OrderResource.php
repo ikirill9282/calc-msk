@@ -440,7 +440,24 @@ class OrderResource extends Resource
 										->query(fn (Builder $query, array $data): Builder => static::applyRulesFilter($query, $data['rules'] ?? []))
 										->indicateUsing(fn (array $state): array => static::getRuleFilterIndicators($state['rules'] ?? [])),
 								
-								
+								SelectFilter::make('payment_method')
+										->label('Способ оплаты')
+										->options([
+												'cash' => 'Наличные',
+												'bill' => 'Безналичный',
+										])
+										->indicator('Способ оплаты'),
+								TernaryFilter::make('has_pickup')
+										->label('Забор груза')
+										->nullable()
+										->placeholder('Все')
+										->trueLabel('Да')
+										->falseLabel('Нет')
+										->queries(
+												true: fn (Builder $query): Builder => $query->where('transfer_method', 'pick'),
+												false: fn (Builder $query): Builder => $query->where('transfer_method', '!=', 'pick'),
+										)
+										->indicateUsing(fn (array $data): array => array_key_exists('value', $data) && $data['value'] !== null ? ['Забор: ' . ($data['value'] ? 'Да' : 'Нет')] : []),
 						])
 						->actions([
 								Tables\Actions\ViewAction::make()
@@ -1375,6 +1392,11 @@ class OrderResource extends Resource
 												->columnSpan(1),
 										])
 								]);
+		}
+
+		public static function getSummaryDisplayValue(Order $record, string $field): mixed
+		{
+				return static::resolveDisplayValue($record, $field);
 		}
 
 

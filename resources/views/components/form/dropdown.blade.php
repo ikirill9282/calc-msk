@@ -10,7 +10,8 @@
   'empty_text' => 'Нет доступных адресов',
   'searchable' => false,
   'name' => '',
-  'rp' => 'fields.'
+  'rp' => 'fields.',
+  'inputClass' => '',
 ])
 @php
   $fieldName = str_ireplace($rp, '', $attributes->get('wire:model'));
@@ -23,7 +24,7 @@
   >
     <x-form.input 
       type="{{ $searchable ? 'text' : 'hidden' }}"
-      class="top-0 left-0 w-full h-full z-10" 
+      class="top-0 left-0 w-full h-full z-10 {{ $inputClass }}" 
       wire:model.live="{{ $attributes->get('wire:model') }}"
       name="{{ $name }}"
       autocomplete="off"

@@ -138,6 +138,16 @@ class OrderResource extends Resource
 										->color(fn (Order $record) => $record->hasChanged('distributor_id', 'distributor_center_id') ? 'warning' : null)
 										->toggleable(isToggledHiddenByDefault: false),
 								
+								Tables\Columns\TextColumn::make('warehouse_address')
+										->label('Адрес склада отправления')
+										->getStateUsing(fn (Order $record) => $record->getWarehouseAddress() ?? '—')
+										->limit(60)
+										->tooltip(fn (Order $record) => $record->getWarehouseAddress())
+										->searchable()
+										->sortable()
+										->color(fn (Order $record) => $record->hasChanged('warehouse_id') ? 'warning' : null)
+										->toggleable(isToggledHiddenByDefault: false),
+								
 								Tables\Columns\TextColumn::make('payment_method')
 										->label('Способ оплаты')
 										->formatStateUsing(fn ($state) => match($state) {

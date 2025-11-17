@@ -335,6 +335,7 @@ class Order extends Model
       'delivery_date' => $item['delivery_date'],
       'distrubutor_id' => $item['distributor_id'],
       'distributor_center_id' => $item['distributor_center_id'],
+      'warehouse_address' => $this->getWarehouseAddress() ?? '',
       'payment_method' => $item['payment_method'],
       'individual' => $item['individual'] ? 'Да' : 'Нет',
       'custom1' => null,

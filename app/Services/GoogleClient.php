@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class GoogleClient
 {
-  public static function write(array $data)
+  public static function write(array $data, bool $forceUpdate = false)
   {
     $client = new Client();
     $client->setApplicationName(env('APP_NAME'));
@@ -27,16 +27,40 @@ class GoogleClient
     $existing = $response->getValues() ?? [];
 
     $order_ids = array_column($existing, 1);
+    $order_id = $data[1];
+    $rowIndex = array_search($order_id, $order_ids);
 
-    // Check existing order id
-    if (!in_array($data[1], $order_ids)) {
+    // Если заявка уже существует и нужно обновить
+    if ($rowIndex !== false && $forceUpdate) {
+      // rowIndex + 2 потому что: +1 для заголовка, +1 потому что индексы начинаются с 1 в Google Sheets
+      $range = $sheetName . '!A' . ($rowIndex + 2);
+      
       $body = new Sheets\ValueRange([
         'values' => [$data]
       ]);
       
       $params = [
         'valueInputOption' => 'USER_ENTERED',
-        // 'insertDataOption' => 'INSERT_ROWS'
+      ];
+
+      $result = $service->spreadsheets_values->update(
+        $spreadsheetId,
+        $range,
+        $body,
+        $params
+      );
+      Log::debug("Order updated {$order_id}", ['order' => $data, 'result' => $result]);
+      return;
+    }
+
+    // Если заявки еще нет, добавляем новую
+    if ($rowIndex === false) {
+      $body = new Sheets\ValueRange([
+        'values' => [$data]
+      ]);
+      
+      $params = [
+        'valueInputOption' => 'USER_ENTERED',
       ];
 
       $result = $service->spreadsheets_values->append(
@@ -45,7 +69,7 @@ class GoogleClient
         $body,
         $params
       );
-      Log::debug("Order printed {$data[1]}", ['order' => $data, 'result' => $result]);
+      Log::debug("Order printed {$order_id}", ['order' => $data, 'result' => $result]);
     }
   }
 }

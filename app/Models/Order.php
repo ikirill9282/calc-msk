@@ -250,6 +250,17 @@ class Order extends Model
       
   }
 
+  public function getWarehouseAddress(): ?string
+  {
+    if (empty($this->warehouse_id)) {
+      return null;
+    }
+
+    return SheetData::where(DB::raw('CONCAT(wh, " ", wh_address)'), $this->warehouse_id)
+      ->first()
+      ?->wh_address ?? $this->warehouse_id;
+  }
+
 
   public function prepareSheetData()
   {
@@ -264,6 +275,10 @@ class Order extends Model
     $order_data['transfer_method'] = $this->getTransferMethod();
     $order_data['payment_method'] = $this->getPaymentMethodLabel($this->payment_method);
     $order_data['payment_method_pick'] = $this->getPaymentMethodLabel($this->payment_method_pick);
+    // Заменяем warehouse_id на адрес склада для отправки в Google таблицу
+    if (!empty($order_data['warehouse_id'])) {
+      $order_data['warehouse_id'] = $this->getWarehouseAddress() ?? $order_data['warehouse_id'];
+    }
     unset($order_data['user'], $order_data['id'], $order_data['user_id'], $order_data['agent_id']);
 
     if ($this->transfer_method == 'pick') {

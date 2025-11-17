@@ -39,7 +39,7 @@ class OrderExportController
         $rows[] = $this->row('Количество палет в поставке, шт.', $this->numberOrEmpty($order->pallets_count));
         $rows[] = $this->row('Кг\м³', $this->numberOrEmpty($order->boxes_weight));
         $rows[] = $this->row('Форма оплаты', $this->paymentMethod($order));
-        $rows[] = $this->row('Склад МП', $order->warehouse_id);
+        $rows[] = $this->row('Склад МП', $order->getWarehouseAddress() ?? $order->warehouse_id);
         $rows[] = $this->row('Дата поставки на склад МП', optional($order->delivery_date)->format('d.m.Y'));
 
         $rows[] = $this->emptyRow();

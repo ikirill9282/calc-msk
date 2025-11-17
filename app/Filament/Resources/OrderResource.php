@@ -1213,6 +1213,7 @@ class OrderResource extends Resource
 															->extraAttributes(fn (Order $record) => $record->hasChanged('distributor_id', 'distributor_center_id') ? ['class' => 'text-orange-500'] : []),
 														Infolists\Components\TextEntry::make('warehouse_id')
 															->label('Склад')
+															->getStateUsing(fn (Order $record) => $record->getWarehouseAddress() ?? $record->warehouse_id ?? '—')
 															->size('sm')
 															->columnSpan(2)
 															->extraAttributes(fn (Order $record) => $record->hasChanged('warehouse_id') ? ['class' => 'text-orange-500'] : []),

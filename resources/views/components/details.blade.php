@@ -18,20 +18,20 @@
           <div class="flex opacity-50">
             <div class="justify-start items-center">Доставка груза</div>
             <div class="border-b border-dotted grow mx-1 translate-y-[-20%]"></div>
-            <div class="">{{ Illuminate\Support\Number::currency($order->delivery, 'RUB', locale: 'ru') }}</div>
+            <div class="">{{ Illuminate\Support\Number::currency($order->delivery ?? 0, 'RUB', locale: 'ru') }}</div>
           </div>
         @endif
         @if(!empty($order->additional))
           <div class="flex opacity-50">
             <div class="justify-start items-center">Складские услуги</div>
             <div class="border-b border-dotted grow mx-1 translate-y-[-20%]"></div>
-            <div class="">{{ Illuminate\Support\Number::currency($order->additional, 'RUB', locale: 'ru') }}</div>
+            <div class="">{{ Illuminate\Support\Number::currency($order->additional ?? 0, 'RUB', locale: 'ru') }}</div>
           </div>
         @endif
         <div class="flex text-lg">
           <div class="font-bold justify-start items-center">Итого</div>
           <div class="border-b border-dotted grow mx-1 translate-y-[-20%]"></div>
-          <div class="">{{ Illuminate\Support\Number::currency($order->total, 'RUB', locale: 'ru') }}</div>
+          <div class="">{{ Illuminate\Support\Number::currency($order->total ?? 0, 'RUB', locale: 'ru') }}</div>
         </div>
         <p class="text-xs">
           Итоговая стоимость является предварительным расчетом, точная стоимость будет известна после взвешивания и обмера груза на складе приема.

@@ -65,6 +65,7 @@ class OrderResource extends Resource
         'pallets_volume',
         'pallets_weight',
         'driver_name',
+        'distribution',
     ];
 
 		public static function table(Table $table): Table
@@ -146,17 +147,6 @@ class OrderResource extends Resource
 										->searchable()
 										->sortable()
 										->color(fn (Order $record) => $record->hasChanged('warehouse_id') ? 'warning' : null)
-										->toggleable(isToggledHiddenByDefault: false),
-								
-								Tables\Columns\TextColumn::make('payment_method')
-										->label('Способ оплаты')
-										->formatStateUsing(fn ($state) => match($state) {
-												'cash' => 'Наличные',
-												'bill' => 'Безналичный',
-												default => $state
-										})
-										->sortable()
-										->color(fn (Order $record) => $record->hasChanged('payment_method') ? 'warning' : null)
 										->toggleable(isToggledHiddenByDefault: false),
 								
 								Tables\Columns\IconColumn::make('individual')
@@ -311,6 +301,18 @@ class OrderResource extends Resource
 										->default('—')
 										->color(fn (Order $record) => $record->hasChanged('transfer_method_pick_address') ? 'warning' : null)
 										->toggleable(isToggledHiddenByDefault: false),
+								
+								Tables\Columns\TextColumn::make('payment_method')
+										->label('Способ оплаты')
+										->formatStateUsing(fn ($state) => match($state) {
+												'cash' => 'Наличные',
+												'bill' => 'Безналичный',
+												default => $state
+										})
+										->sortable()
+										->color(fn (Order $record) => $record->hasChanged('payment_method') ? 'warning' : null)
+										->toggleable(isToggledHiddenByDefault: false),
+								
 				// Оплата за забор груза
 				Tables\Columns\TextColumn::make('pick')
 						->label('Оплата за забор')
@@ -1132,6 +1134,7 @@ class OrderResource extends Resource
 						'boxes_count' => $hasPallets ? 'pallets_boxcount' : 'boxes_count',
 						'boxes_volume' => $hasPallets ? 'pallets_volume' : 'boxes_volume',
 						'boxes_weight' => $hasPallets ? 'pallets_weight' : 'boxes_weight',
+						'distribution' => 'distribution_edit',
 						default => $field,
 				};
 		}
@@ -1150,6 +1153,7 @@ class OrderResource extends Resource
 						'boxes_weight' => $hasPallets
 								? $record->pallets_weight
 								: $record->boxes_weight,
+						'distribution' => static::formatDistributionForEdit($record),
 						default => data_get($record, $field),
 				};
 		}
@@ -1159,6 +1163,21 @@ class OrderResource extends Resource
 				$count = $record->pallets_count;
 
 				return $count !== null && (float) $count > 0;
+		}
+
+		protected static function formatDistributionForEdit(Order $record): string
+		{
+				// Если есть distribution_label, разбиваем его по " - "
+				if ($record->distribution_label && str_contains($record->distribution_label, ' - ')) {
+						$parts = explode(' - ', $record->distribution_label, 2);
+						return trim($parts[0] ?? '') . '|' . trim($parts[1] ?? '');
+				}
+
+				// Иначе используем прямые значения полей
+				$distributorId = $record->distributor_id ?? '';
+				$distributorCenterId = $record->distributor_center_id ?? '';
+
+				return $distributorId . '|' . $distributorCenterId;
 		}
 
 		public static function infolist(Infolist $infolist): Infolist

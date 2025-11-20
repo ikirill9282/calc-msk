@@ -130,8 +130,35 @@ class Order extends Model
         $model->delivery = null;
         $model->additional = null;
         $model->total = null;
-      } elseif ($model->shouldRecalculatePricing()) {
-        $model->recalculatePricing();
+      } else {
+        $hasManualCostChanges = $model->isDirty('pick')
+          || $model->isDirty('delivery')
+          || $model->isDirty('additional');
+
+        if ($model->shouldRecalculatePricing()) {
+          // Сохраняем вручную измененные поля стоимости
+          $manualPick = $model->isDirty('pick') ? $model->pick : null;
+          $manualDelivery = $model->isDirty('delivery') ? $model->delivery : null;
+          $manualAdditional = $model->isDirty('additional') ? $model->additional : null;
+
+          $model->recalculatePricing();
+
+          // Восстанавливаем вручную измененные значения
+          if ($manualPick !== null) {
+            $model->pick = $manualPick;
+          }
+          if ($manualDelivery !== null) {
+            $model->delivery = $manualDelivery;
+          }
+          if ($manualAdditional !== null) {
+            $model->additional = $manualAdditional;
+          }
+        }
+
+        if ($hasManualCostChanges) {
+          $expectedTotal = $model->cash_expected_total;
+          $model->total = $expectedTotal !== null ? (int) ceil($expectedTotal) : null;
+        }
       }
 
       if (!$model->exists) {
@@ -335,7 +362,6 @@ class Order extends Model
       'delivery_date' => $item['delivery_date'],
       'distrubutor_id' => $item['distributor_id'],
       'distributor_center_id' => $item['distributor_center_id'],
-      'warehouse_address' => $this->getWarehouseAddress() ?? '',
       'payment_method' => $item['payment_method'],
       'individual' => $item['individual'] ? 'Да' : 'Нет',
       'custom1' => null,
@@ -377,6 +403,7 @@ class Order extends Model
       'user_name' => $user->name,
       'user_phone' => "'$user->phone",
       'user_email' => $user->email,
+      'warehouse_address' => $this->getWarehouseAddress() ?? '',
     ];
 
     $formatted = array_map(fn($val) => is_null($val) ? '' : $val, $formatted);

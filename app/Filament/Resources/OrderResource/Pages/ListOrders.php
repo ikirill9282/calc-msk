@@ -281,9 +281,28 @@ class ListOrders extends ListRecords
         }
 
         try {
+            // Сохраняем оригинальные значения дат, которые не должны изменяться
+            $dateFields = ['delivery_date', 'transfer_method_receive_date', 'transfer_method_pick_date'];
+            $originalDates = [];
+            foreach ($dateFields as $dateField) {
+                if ($dateField !== $field) {
+                    $originalDates[$dateField] = $record->getRawOriginal($dateField);
+                }
+            }
+
             $record->fillFields([
                 $field => $value,
             ]);
+
+            // Восстанавливаем оригинальные значения дат, если они не были изменены явно
+            foreach ($originalDates as $dateField => $originalValue) {
+                if (!$record->isDirty($dateField)) {
+                    $record->setAttribute($dateField, $originalValue);
+                    // Синхронизируем оригинальное значение, чтобы Laravel не считал поле измененным
+                    $record->syncOriginalAttribute($dateField);
+                }
+            }
+
             $record->save();
 
             $this->resetTable();
@@ -305,6 +324,13 @@ class ListOrders extends ListRecords
         }
 
         try {
+            // Сохраняем оригинальные значения дат, которые не должны изменяться
+            $dateFields = ['delivery_date', 'transfer_method_receive_date', 'transfer_method_pick_date'];
+            $originalDates = [];
+            foreach ($dateFields as $dateField) {
+                $originalDates[$dateField] = $record->getRawOriginal($dateField);
+            }
+
             // Разбиваем значение по разделителю "|"
             // Формат: "РЦ|Адрес"
             $parts = explode('|', $value, 2);
@@ -315,6 +341,16 @@ class ListOrders extends ListRecords
                 'distributor_id' => $distributorId ?: null,
                 'distributor_center_id' => $distributorCenterId ?: null,
             ]);
+
+            // Восстанавливаем оригинальные значения дат, если они не были изменены явно
+            foreach ($originalDates as $dateField => $originalValue) {
+                if (!$record->isDirty($dateField)) {
+                    $record->setAttribute($dateField, $originalValue);
+                    // Синхронизируем оригинальное значение, чтобы Laravel не считал поле измененным
+                    $record->syncOriginalAttribute($dateField);
+                }
+            }
+
             $record->save();
 
             $this->resetTable();

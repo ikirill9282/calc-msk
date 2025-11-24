@@ -470,13 +470,13 @@ class OrderResource extends Resource
 									->recordValueUsing(fn (Order $record): float => (float) ($record->total ?? 0))
 						)
 						->toggleable(isToggledHiddenByDefault: false),
-								
-								Tables\Columns\TextColumn::make('individual_cost')
-										->label('Индивид стоимость')
-										->money('RUB')
-										->getStateUsing(fn (Order $record) => $record->individual ? static::calculateIndividualCost($record) : null)
-										->default('—')
-										->toggleable(isToggledHiddenByDefault: false),
+
+				Tables\Columns\TextColumn::make('individual_cost')
+						->label('Индивид стоимость')
+						->money('RUB')
+						->getStateUsing(fn (Order $record) => $record->individual ? static::calculateIndividualCost($record) : null)
+						->default('—')
+						->toggleable(isToggledHiddenByDefault: false),
 								
 								Tables\Columns\TextColumn::make('cargo_comment')
 										->label('Комментарий')

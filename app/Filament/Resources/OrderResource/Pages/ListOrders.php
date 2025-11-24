@@ -10,11 +10,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\View\View;
 
 class ListOrders extends ListRecords
 {
     protected static string $resource = OrderResource::class;
+
+    protected static string $view = 'filament.resources.order-resource.pages.list-orders';
 
     protected $listeners = [
         'inlineEditCell' => 'handleInlineEditCell',
@@ -324,23 +325,6 @@ class ListOrders extends ListRecords
         }
     }
 
-    protected function getTableContentFooter(): ?View
-    {
-        $summary = $this->getSelectedOrdersSummary();
-
-        Log::debug('ListOrders::getTableContentFooter', [
-            'summary_exists' => $summary !== null,
-            'summary_count' => $summary['count'] ?? 0,
-        ]);
-
-        if ($summary === null) {
-            return null;
-        }
-
-        return view('filament.tables.selected-summary', [
-            'summary' => $summary,
-        ]);
-    }
 
     public function getSelectedOrdersSummaryForIds(array $ids): ?array
     {

@@ -155,9 +155,19 @@ class Order extends Model
           }
         }
 
-        if ($hasManualCostChanges) {
-          $expectedTotal = $model->cash_expected_total;
-          $model->total = $expectedTotal !== null ? (int) ceil($expectedTotal) : null;
+        // Всегда пересчитываем total как сумму pick + delivery + additional
+        // Это гарантирует, что total будет правильным при создании и обновлении заявки
+        // Выполняем это в самом конце, после всех манипуляций с полями стоимости
+        $expectedTotal = $model->cash_expected_total;
+        if ($expectedTotal !== null) {
+          $model->total = (int) ceil($expectedTotal);
+        } elseif ($model->pick === null && $model->delivery === null && $model->additional === null) {
+          // Если все компоненты null, то и total должен быть null
+          $model->total = null;
+        } else {
+          // Если хотя бы один компонент установлен, пересчитываем total
+          $sum = ($model->pick ?? 0) + ($model->delivery ?? 0) + ($model->additional ?? 0);
+          $model->total = $sum > 0 ? (int) ceil($sum) : null;
         }
       }
 
@@ -250,6 +260,24 @@ class Order extends Model
   public function getDistributionLabelAttribute(): string
   {
     return $this->distributionLabel();
+  }
+
+  public function getCashExpectedTotalAttribute(): ?float
+  {
+    $components = [$this->pick, $this->delivery, $this->additional];
+    $sum = 0.0;
+    $hasValue = false;
+
+    foreach ($components as $value) {
+      if ($value === null) {
+        continue;
+      }
+
+      $sum += (float) $value;
+      $hasValue = true;
+    }
+
+    return $hasValue ? $sum : null;
   }
 
   public static function getFieldLabel(string $field): string
@@ -488,21 +516,22 @@ class Order extends Model
 
   public function shouldRecalculatePricing(): bool
   {
-    if (! $this->exists) {
+    if ($this->individual) {
       return false;
     }
 
-    $dirty = array_keys($this->getDirty());
+    if (! $this->exists) {
+      return true;
+    }
 
-    return collect(static::$pricingRecalculationFields)
-      ->intersect($dirty)
-      ->isNotEmpty();
+    return $this->isDirty(static::$pricingRecalculationFields);
   }
 
   public function recalculatePricing(): void
   {
-    $calculator = app(OrderCostCalculator::class);
-
-    $calculator->calculate($this);
+    // Для calcM используем упрощенную логику - просто пересчитываем total из существующих значений
+    // Если нужен полный пересчет через OrderCostCalculator, его нужно будет добавить
+    $expectedTotal = $this->cash_expected_total;
+    $this->total = $expectedTotal !== null ? (int) ceil($expectedTotal) : null;
   }
 }

@@ -248,7 +248,10 @@ class OrderResource extends Resource
 										->getStateUsing(fn (Order $record) => $record->getWarehouseAddress() ?? '—')
 										->limit(60)
 										->tooltip(fn (Order $record) => $record->getWarehouseAddress())
-										->searchable()
+										->searchable(query: function (Builder $query, string $search): Builder {
+												// Поиск по warehouse_id, так как warehouse_address - вычисляемое поле
+												return $query->orWhere('warehouse_id', 'like', "%{$search}%");
+										})
 										->sortable()
 										->color(fn (Order $record) => $record->hasChanged('warehouse_id') ? 'warning' : null)
 										->toggleable(isToggledHiddenByDefault: false),

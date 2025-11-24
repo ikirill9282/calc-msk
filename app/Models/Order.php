@@ -189,6 +189,7 @@ class Order extends Model
       $changed = array_values(array_diff($dirty, $ignore));
       
       // Восстанавливаем оригинальные значения дат, если они не были изменены явно
+      // и исключаем их из списка измененных полей
       foreach ($originalDates as $dateField => $originalValue) {
         // Проверяем, было ли поле изменено ДО того, как мы начали сохранять
         if (!in_array($dateField, $dirtyFieldsBefore, true)) {
@@ -199,8 +200,15 @@ class Order extends Model
             $model->setAttribute($dateField, $originalValue);
             $model->syncOriginalAttribute($dateField);
           }
+          // Исключаем поле даты из списка измененных полей
+          $changed = array_values(array_diff($changed, [$dateField]));
         }
       }
+      
+      // После восстановления значений дат, обновляем список dirty полей
+      // чтобы убедиться, что даты не попали в список измененных
+      $dirty = array_keys($model->getDirty());
+      $changed = array_values(array_diff($dirty, array_merge($ignore, $dateFields)));
 
       $previous = $model->getOriginal('changed_fields') ?? [];
       if (!is_array($previous)) {

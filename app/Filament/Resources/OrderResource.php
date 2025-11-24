@@ -260,14 +260,6 @@ class OrderResource extends Resource
 										->color(fn (Order $record) => $record->hasChanged('individual') ? 'warning' : null)
 										->toggleable(isToggledHiddenByDefault: false),
 								
-								Tables\Columns\TextColumn::make('individual_cost')
-										->label('Индивид стоимость')
-										->money('RUB')
-										->getStateUsing(fn (Order $record) => $record->individual ? static::calculateIndividualCost($record) : null)
-										->default('—')
-										->visible(fn () => in_array(optional(auth()->user())->role, ['manager', 'admin'], true))
-										->toggleable(isToggledHiddenByDefault: false),
-								
 								// Груз
 								Tables\Columns\TextColumn::make('cargo')
 										->label('Груз')
@@ -478,6 +470,14 @@ class OrderResource extends Resource
 									->recordValueUsing(fn (Order $record): float => (float) ($record->total ?? 0))
 						)
 						->toggleable(isToggledHiddenByDefault: false),
+								
+								Tables\Columns\TextColumn::make('individual_cost')
+										->label('Индивид стоимость')
+										->money('RUB')
+										->getStateUsing(fn (Order $record) => $record->individual ? static::calculateIndividualCost($record) : null)
+										->default('—')
+										->visible(fn () => in_array(optional(auth()->user())->role, ['manager', 'admin'], true))
+										->toggleable(isToggledHiddenByDefault: false),
 								
 								Tables\Columns\TextColumn::make('cargo_comment')
 										->label('Комментарий')

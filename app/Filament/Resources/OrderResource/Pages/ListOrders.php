@@ -8,6 +8,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\View\View;
 
@@ -327,6 +328,11 @@ class ListOrders extends ListRecords
     {
         $summary = $this->getSelectedOrdersSummary();
 
+        Log::debug('ListOrders::getTableContentFooter', [
+            'summary_exists' => $summary !== null,
+            'summary_count' => $summary['count'] ?? 0,
+        ]);
+
         if ($summary === null) {
             return null;
         }
@@ -336,25 +342,121 @@ class ListOrders extends ListRecords
         ]);
     }
 
-    protected function getSelectedOrdersSummary(): ?array
+    public function getSelectedOrdersSummaryForIds(array $ids): ?array
     {
-        $records = $this->getSelectedTableRecords();
-
-        if ($records->isEmpty()) {
+        Log::info('getSelectedOrdersSummaryForIds called', ['ids' => $ids, 'count' => count($ids)]);
+        
+        if (count($ids) < 2) {
+            Log::debug('getSelectedOrdersSummaryForIds: less than 2 ids', ['count' => count($ids)]);
             return null;
         }
 
+        $records = Order::query()->whereIn('id', $ids)->get();
+        
+        Log::info('getSelectedOrdersSummaryForIds: records found', ['count' => $records->count()]);
+        
+        if ($records->isEmpty()) {
+            Log::debug('getSelectedOrdersSummaryForIds: no records found');
+            return null;
+        }
+
+        // Вспомогательная функция для безопасного преобразования в число
+        $toFloat = function ($value): float {
+            if ($value === null || $value === '') {
+                return 0.0;
+            }
+            if (is_numeric($value)) {
+                return (float) $value;
+            }
+            // Пытаемся извлечь число из строки (например, "10000 ₽" -> 10000)
+            if (is_string($value)) {
+                preg_match('/[\d.,]+/', str_replace(',', '.', $value), $matches);
+                return $matches ? (float) str_replace(',', '.', $matches[0]) : 0.0;
+            }
+            return 0.0;
+        };
+
         return [
             'count' => $records->count(),
-            'pallets_count' => $records->sum(fn (Order $order) => (float) ($order->pallets_count ?? 0)),
-            'boxes_count' => $records->sum(fn (Order $order) => (float) (OrderResource::getSummaryDisplayValue($order, 'boxes_count') ?? 0)),
-            'boxes_volume' => $records->sum(fn (Order $order) => (float) (OrderResource::getSummaryDisplayValue($order, 'boxes_volume') ?? 0)),
-            'boxes_weight' => $records->sum(fn (Order $order) => (float) (OrderResource::getSummaryDisplayValue($order, 'boxes_weight') ?? 0)),
-            'palletizing_count' => $records->sum(fn (Order $order) => (float) ($order->palletizing_count ?? 0)),
-            'pick' => $records->sum(fn (Order $order) => (float) ($order->pick ?? 0)),
-            'delivery' => $records->sum(fn (Order $order) => (float) ($order->delivery ?? 0)),
-            'additional' => $records->sum(fn (Order $order) => (float) ($order->additional ?? 0)),
-            'total' => $records->sum(fn (Order $order) => (float) ($order->total ?? 0)),
+            'pallets_count' => $records->sum(fn (Order $order) => $toFloat($order->pallets_count)),
+            'boxes_count' => $records->sum(fn (Order $order) => $toFloat(OrderResource::getSummaryDisplayValue($order, 'boxes_count'))),
+            'boxes_volume' => $records->sum(fn (Order $order) => $toFloat(OrderResource::getSummaryDisplayValue($order, 'boxes_volume'))),
+            'boxes_weight' => $records->sum(fn (Order $order) => $toFloat(OrderResource::getSummaryDisplayValue($order, 'boxes_weight'))),
+            'palletizing_count' => $records->sum(fn (Order $order) => $toFloat($order->palletizing_count)),
+            'pick' => $records->sum(fn (Order $order) => $toFloat($order->pick)),
+            'delivery' => $records->sum(fn (Order $order) => $toFloat($order->delivery)),
+            'additional' => $records->sum(fn (Order $order) => $toFloat($order->additional)),
+            'total' => $records->sum(fn (Order $order) => $toFloat($order->total)),
+        ];
+    }
+
+    protected function getSelectedOrdersSummary(): ?array
+    {
+        // Пробуем получить выбранные записи разными способами
+        $records = null;
+        
+        // Способ 1: через свойство selectedTableRecords напрямую (самый надежный)
+        if (property_exists($this, 'selectedTableRecords') && !empty($this->selectedTableRecords)) {
+            $selectedIds = $this->selectedTableRecords;
+            if (!empty($selectedIds) && is_array($selectedIds)) {
+                $records = Order::query()->whereIn('id', $selectedIds)->get();
+            }
+        }
+        
+        // Способ 2: через метод getSelectedTableRecords (если способ 1 не сработал)
+        if (($records === null || $records->isEmpty())) {
+            try {
+                $records = $this->getSelectedTableRecords(true); // true = загрузить из БД
+            } catch (\Throwable $e) {
+                Log::debug('ListOrders::getSelectedOrdersSummary - getSelectedTableRecords failed', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+        
+        Log::info('ListOrders::getSelectedOrdersSummary', [
+            'selected_count_method' => $records ? $records->count() : 0,
+            'selected_ids_property' => property_exists($this, 'selectedTableRecords') 
+                ? (is_array($this->selectedTableRecords) ? count($this->selectedTableRecords) : 'not_array')
+                : 'no_property',
+            'selected_ids' => property_exists($this, 'selectedTableRecords') && is_array($this->selectedTableRecords)
+                ? array_slice($this->selectedTableRecords, 0, 10) // Логируем только первые 10
+                : [],
+            'will_return_summary' => ($records !== null && $records->isNotEmpty() && $records->count() >= 2),
+        ]);
+
+        // Показываем сводку только при выборе 2 и более заявок
+        if ($records === null || $records->isEmpty() || $records->count() < 2) {
+            return null;
+        }
+
+        // Вспомогательная функция для безопасного преобразования в число
+        $toFloat = function ($value): float {
+            if ($value === null || $value === '') {
+                return 0.0;
+            }
+            if (is_numeric($value)) {
+                return (float) $value;
+            }
+            // Пытаемся извлечь число из строки (например, "10000 ₽" -> 10000)
+            if (is_string($value)) {
+                preg_match('/[\d.,]+/', str_replace(',', '.', $value), $matches);
+                return $matches ? (float) str_replace(',', '.', $matches[0]) : 0.0;
+            }
+            return 0.0;
+        };
+
+        return [
+            'count' => $records->count(),
+            'pallets_count' => $records->sum(fn (Order $order) => $toFloat($order->pallets_count)),
+            'boxes_count' => $records->sum(fn (Order $order) => $toFloat(OrderResource::getSummaryDisplayValue($order, 'boxes_count'))),
+            'boxes_volume' => $records->sum(fn (Order $order) => $toFloat(OrderResource::getSummaryDisplayValue($order, 'boxes_volume'))),
+            'boxes_weight' => $records->sum(fn (Order $order) => $toFloat(OrderResource::getSummaryDisplayValue($order, 'boxes_weight'))),
+            'palletizing_count' => $records->sum(fn (Order $order) => $toFloat($order->palletizing_count)),
+            'pick' => $records->sum(fn (Order $order) => $toFloat($order->pick)),
+            'delivery' => $records->sum(fn (Order $order) => $toFloat($order->delivery)),
+            'additional' => $records->sum(fn (Order $order) => $toFloat($order->additional)),
+            'total' => $records->sum(fn (Order $order) => $toFloat($order->total)),
         ];
     }
 }

@@ -476,7 +476,6 @@ class OrderResource extends Resource
 										->money('RUB')
 										->getStateUsing(fn (Order $record) => $record->individual ? static::calculateIndividualCost($record) : null)
 										->default('—')
-										->visible(fn () => in_array(optional(auth()->user())->role, ['manager', 'admin'], true))
 										->toggleable(isToggledHiddenByDefault: false),
 								
 								Tables\Columns\TextColumn::make('cargo_comment')

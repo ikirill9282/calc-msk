@@ -285,7 +285,8 @@ class ListOrders extends ListRecords
             $dateFields = ['delivery_date', 'transfer_method_receive_date', 'transfer_method_pick_date'];
             $originalDates = [];
             foreach ($dateFields as $dateField) {
-                if ($dateField !== $field) {
+                if ($field !== $dateField) {
+                    // Сохраняем оригинальное значение из БД
                     $originalDates[$dateField] = $record->getRawOriginal($dateField);
                 }
             }
@@ -296,9 +297,10 @@ class ListOrders extends ListRecords
 
             // Восстанавливаем оригинальные значения дат, если они не были изменены явно
             foreach ($originalDates as $dateField => $originalValue) {
+                // Если поле не было изменено явно (не в списке dirty полей),
+                // восстанавливаем оригинальное значение
                 if (!$record->isDirty($dateField)) {
                     $record->setAttribute($dateField, $originalValue);
-                    // Синхронизируем оригинальное значение, чтобы Laravel не считал поле измененным
                     $record->syncOriginalAttribute($dateField);
                 }
             }

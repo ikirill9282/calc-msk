@@ -175,9 +175,32 @@ class Order extends Model
         return;
       }
 
+      // Сохраняем оригинальные значения дат в начале, до любых изменений
+      $dateFields = ['delivery_date', 'transfer_method_receive_date', 'transfer_method_pick_date'];
+      $originalDates = [];
+      $dirtyFieldsBefore = array_keys($model->getDirty());
+      
+      foreach ($dateFields as $dateField) {
+        $originalDates[$dateField] = $model->getRawOriginal($dateField);
+      }
+
       $dirty = array_keys($model->getDirty());
       $ignore = ['created_at', 'updated_at', 'changed_fields'];
       $changed = array_values(array_diff($dirty, $ignore));
+      
+      // Восстанавливаем оригинальные значения дат, если они не были изменены явно
+      foreach ($originalDates as $dateField => $originalValue) {
+        // Проверяем, было ли поле изменено ДО того, как мы начали сохранять
+        if (!in_array($dateField, $dirtyFieldsBefore, true)) {
+          // Если поле не было изменено явно, восстанавливаем оригинальное значение
+          $currentValue = $model->getAttribute($dateField);
+          // Сравниваем значения, чтобы не перезаписывать, если они одинаковые
+          if ($currentValue != $originalValue) {
+            $model->setAttribute($dateField, $originalValue);
+            $model->syncOriginalAttribute($dateField);
+          }
+        }
+      }
 
       $previous = $model->getOriginal('changed_fields') ?? [];
       if (!is_array($previous)) {

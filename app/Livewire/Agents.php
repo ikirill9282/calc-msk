@@ -139,7 +139,7 @@ class Agents extends Component
           'title' => 'required|string',
           'inn' => 'required|string',
           'ogrn' => 'required|string',
-          'address' => 'required|string',
+          'address' => 'nullable|string',
           'name' => 'required|string',
           'phone' => 'required|string',
           'email' => 'required|string|email:dns',
@@ -148,7 +148,6 @@ class Agents extends Component
           'title.required' => 'Необходимо заполнить поле',
           'inn.required' => 'Необходимо заполнить поле',
           'ogrn.required' => 'Необходимо заполнить поле',
-          'address.required' => 'Необходимо заполнить поле',
           'name.required' => 'Необходимо заполнить поле',
           'phone.required' => 'Необходимо заполнить поле',
           'email.required' => 'Необходимо заполнить поле',
@@ -172,6 +171,11 @@ class Agents extends Component
       $valid = $validator->validated();
       $valid['user_id'] = Auth::user()->id;
       
+      // Преобразуем пустой или null address в пустую строку вместо null
+      if (!isset($valid['address']) || $valid['address'] === null || trim($valid['address']) === '') {
+        $valid['address'] = '';
+      }
+      
       $agent = Agent::where([
         'user_id' => $valid['user_id'],
         'title' => $valid['title'],
@@ -188,6 +192,7 @@ class Agents extends Component
           'name' => $valid['name'],
           'phone' => $valid['phone'],
           'email' => $valid['email'],
+          'address' => $valid['address'] ?? '',
         ]);
         $this->reloadAgents();
         return ;

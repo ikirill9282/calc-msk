@@ -214,11 +214,11 @@ class Calculator extends Component
           $weight = floatval($weight);
           
           if ($volume > 0) {
-            $density = round($weight / $volume);
-            if ($density > 300) {
-              $this->setField('individual', 1);
-            } elseif ($this->getField('individual')) {
-              $this->setField('individual', 0);
+          $density = round($weight / $volume);
+          if ($density > 300) {
+            $this->setField('individual', 1);
+          } elseif ($this->getField('individual')) {
+            $this->setField('individual', 0);
             }
           }
         }
@@ -231,9 +231,9 @@ class Calculator extends Component
         if ($pallets_weight) {
           $pallets_weight = floatval($pallets_weight);
           if ($pallets_weight > 400) {
-            $this->setField('individual', 1);
-          } else {
-            $this->setField('individual', 0);
+          $this->setField('individual', 1);
+        } else {
+          $this->setField('individual', 0);
           }
         }
       }
